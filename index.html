@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIIP Level 2 Lesson 12 Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;700&family=Noto+Sans+KR:wght@300;400;700&display=swap');
+        
+        body {
+            font-family: 'Kantumruy Pro', 'Noto Sans KR', sans-serif;
+            background: #fdf2f8; /* Light Pink theme for mistakes/blushing */
+        }
+        .korean { font-family: 'Noto Sans KR', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(244, 114, 182, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-10">
+
+    <div id="app" class="max-w-2xl mx-auto px-4 pt-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-pink-800 mb-2">KIIP កម្រិត ២ - មេរៀនទី ១២</h1>
+            <p class="text-gray-600">실수를 자주 하는 편이에요</p>
+            <div id="progress-bar" class="w-full bg-gray-200 h-2 mt-4 rounded-full overflow-hidden">
+                <div id="progress-fill" class="bg-pink-500 h-full w-0 transition-all duration-500"></div>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="glass-card rounded-2xl p-8 text-center shadow-xl border-t-4 border-pink-500">
+            <div class="mb-6">
+                <i class="fas fa-flushed text-6xl text-pink-500 animate-bounce"></i>
+            </div>
+            <h2 class="text-xl font-bold mb-4 text-gray-800">តើអ្នកធ្លាប់ធ្វើខុសខ្លះទេ?</h2>
+            <ul class="text-left text-gray-600 mb-8 space-y-2 max-w-xs mx-auto">
+                <li><i class="fas fa-check-circle text-pink-500 mr-2"></i> សំណួរសរុប៖ ៣០ សំណួរ</li>
+                <li><i class="fas fa-check-circle text-pink-500 mr-2"></i> វេយ្យាករណ៍៖ -은 적이 있다, -는 편이다</li>
+                <li><i class="fas fa-check-circle text-pink-500 mr-2"></i> វប្បធម៌៖ ការធ្វើខុស និងបទពិសោធន៍</li>
+            </ul>
+            <button onclick="quizManager.start()" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg">
+                ចាប់ផ្ដើមតេស្ត
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <!-- Helper Tools -->
+            <div class="flex justify-between mb-4 gap-2">
+                <button onclick="quizManager.usePowerUp('translate')" class="flex-1 bg-white border border-pink-200 py-2 rounded-lg text-sm font-medium text-pink-600 hover:bg-pink-50 transition-all">
+                    <i class="fas fa-language"></i> បកប្រែសំណួរ
+                </button>
+                <button onclick="quizManager.usePowerUp('fiftyFifty')" class="flex-1 bg-white border border-pink-200 py-2 rounded-lg text-sm font-medium text-pink-600 hover:bg-pink-50 transition-all">
+                    <i class="fas fa-adjust"></i> កាត់ ៥០/៥០
+                </button>
+                <button onclick="quizManager.usePowerUp('transOptions')" class="flex-1 bg-white border border-pink-200 py-2 rounded-lg text-sm font-medium text-pink-600 hover:bg-pink-50 transition-all">
+                    <i class="fas fa-list-ul"></i> បកប្រែចម្លើយ
+                </button>
+            </div>
+
+            <!-- Question Card -->
+            <div class="glass-card rounded-2xl p-6 shadow-xl mb-6">
+                <div class="flex justify-between items-start mb-4">
+                    <span id="question-category" class="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-xs font-bold uppercase"></span>
+                    <span id="question-number" class="text-gray-400 font-bold"></span>
+                </div>
+                
+                <div class="flex items-start gap-3 mb-6">
+                    <button id="tts-btn" onclick="quizManager.speakQuestion()" class="mt-1 bg-pink-500 hover:bg-pink-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md shrink-0">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <div>
+                        <h3 id="question-text" class="text-lg korean leading-relaxed font-medium text-gray-800"></h3>
+                        <p id="question-translate" class="hidden mt-2 text-gray-500 italic text-sm"></p>
+                    </div>
+                </div>
+
+                <div id="options-container" class="space-y-3">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+
+            <!-- Explanation Area -->
+            <div id="explanation-card" class="hidden glass-card rounded-2xl p-6 shadow-xl mb-6 border-l-8 border-pink-500">
+                <h4 class="font-bold text-pink-700 mb-2 italic underline text-sm">ការពន្យល់លម្អិត៖</h4>
+                <div id="explanation-content" class="text-sm text-gray-700 leading-relaxed space-y-2"></div>
+                <button onclick="quizManager.next()" class="w-full mt-6 bg-pink-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-pink-700">
+                    បន្ទាប់ <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden glass-card rounded-2xl p-8 text-center shadow-xl">
+            <h2 class="text-3xl font-bold mb-2 text-gray-800">លទ្ធផលរបស់អ្នក</h2>
+            <div id="score-display" class="text-6xl font-black text-pink-600 my-6">0/30</div>
+            <p id="result-message" class="text-gray-600 mb-8"></p>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="location.reload()" class="bg-gray-100 text-gray-700 py-3 rounded-xl font-bold">
+                    ធ្វើឡើងវិញ
+                </button>
+                <button onclick="quizManager.reviewMode()" class="bg-pink-600 text-white py-3 rounded-xl font-bold">
+                    ផ្ទៀងផ្ទាត់ចម្លើយ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // Vocabulary & Grammar (1-10)
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "가: 라흐만 씨는 한국말을 아주 잘하네요.\n나: 아니요, 아직 실수를 ( ).",
+                translate: "ក៖ លោក រ៉ាម៉ាន់ និយាយភាសាកូរ៉េពូកែណាស់។\nខ៖ ទេ ខ្ញុំនៅតែ (ហាក់ដូចជាធ្វើខុសច្រើនដែរ)។",
+                options: ["많이 하는 편이에요", "많이 한 적이 있어요", "많이 하고 싶어요", "많이 해서 다행이에요"],
+                answer: 0,
+                explanation: "ប្រើ <b>-는 편이다</b> ដើម្បីបញ្ជាក់ពីទំនោរ ឬចរិតលក្ខណៈទូទៅ។ <b>하다</b> + <b>-는 편이다</b> → <b>하는 편이에요</b>។",
+                khmerOptions: ["ហាក់ដូចជាធ្វើខុសច្រើនដែរ", "ធ្លាប់ធ្វើខុសច្រើន", "ចង់ធ្វើខុសច្រើន", "សំណាងហើយដែលធ្វើខុសច្រើន"]
+            },
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "가: 제주도에 ( )?\n나: 네, 작년에 가족들과 같이 갔었어요.",
+                translate: "ក៖ តើអ្នក (ធ្លាប់ទៅ) កោះជេជូទេ?\nខ៖ បាទ កាលពីឆ្នាំមុន ខ្ញុំបានទៅជាមួយគ្រួសារ។",
+                options: ["간 적이 있어요", "가 본 적이 있어요", "가고 싶어요", "가 본 적이 없어요"],
+                answer: 1,
+                explanation: "ប្រើ <b>-은/ㄴ 적이 있다</b> ដើម្បីសួរពីបទពិសោធន៍។ ជាទូទៅប្រើជាមួយ <b>-아/어 보다</b> (សាកល្បង) ទៅជា <b>-본 적이 있다</b>។",
+                khmerOptions: ["ធ្លាប់ទៅ", "ធ្លាប់បានទៅលេង", "ចង់ទៅ", "មិនធ្លាប់បានទៅលេង"]
+            },
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "가: 왜 그렇게 얼굴이 빨개졌어요?\n나: 사람들 앞에서 실수를 해서 너무 ( ).",
+                translate: "ក៖ ហេតុអ្វីបានជាមុខក្រហមម្ល៉េះ?\nខ៖ មកពីខ្ញុំធ្វើខុសនៅមុខមនុស្សច្រើនពេក ទើបមានអារម្មណ៍ (ខ្មាសគេ)។",
+                options: ["당황했어요", "창피했어요", "속상했어요", "무서웠어요"],
+                answer: 1,
+                explanation: "<b>창피하다</b> មានន័យថា ខ្មាសគេ (Embarrassed)។",
+                khmerOptions: ["ភ័យស្លន់ស្លោ", "ខ្មាសគេ", "ខូចចិត្ត", "ខ្លាច"]
+            },
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "저는 가끔 다른 사람의 신발을 제 신발로 ( ) 신어요.",
+                translate: "ជួនកាលខ្ញុំ (ច្រឡំ) យកស្បែកជើងអ្នកដទៃមកពាក់ ស្មានតែជារបស់ខ្លួនឯង។",
+                options: ["오해해서", "착각해서", "걱정해서", "무시해서"],
+                answer: 1,
+                explanation: "<b>착각하다</b> មានន័យថា ច្រឡំ ឬភាន់ច្រឡំ (To mistake one thing for another)។",
+                khmerOptions: ["យល់ច្រឡំ (លើរឿងហេតុ)", "ភាន់ច្រឡំ/ស្មានថា", "បារម្ភ", "មើលងាយ"]
+            },
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "가: 지갑을 어디에 두었는지 생각이 안 나요.\n나: 요즘 ( )이/가 심한 것 같아요. 조심하세요.",
+                translate: "ក៖ ខ្ញុំនឹកមិនឃើញថាដាក់កាបូបលុយនៅឯណាទេ។\nខ៖ មួយរយៈនេះ ហាក់ដូចជា (ជំងឺភ្លេចភ្លាំង) ធ្ងន់ធ្ងរហើយ។ ប្រយ័ត្នផង។",
+                options: ["건망증", "기억력", "몸살", "두통"],
+                answer: 0,
+                explanation: "<b>건망증</b> គឺជំងឺភ្លេចភ្លាំង (Forgetfulness)។",
+                khmerOptions: ["ជំងឺភ្លេចភ្លាំង", "ការចងចាំ", "ជំងឺឈឺខ្លួនប្រាណ", "ការឈឺក្បាល"]
+            },
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "가: 한국 음식을 잘 먹어요?\n나: 네, 저는 한국 음식을 매일 ( ).",
+                translate: "ក៖ តើអ្នកញ៉ាំអាហារកូរ៉េបានទេ?\nខ៖ បាទ ខ្ញុំ (ហាក់ដូចជាញ៉ាំ) អាហារកូរ៉េរាល់ថ្ងៃដែរ។",
+                options: ["먹은 적이 있는 편이에요", "먹는 편이에요", "먹는 적이 없어요", "먹은 편이에요"],
+                answer: 1,
+                explanation: "<b>-는 편이다</b> ប្រើជាមួយកិរិយាសព្ទបច្ចុប្បន្ន ដើម្បីបង្ហាញពីសកម្មភាពដែលធ្វើជាប្រចាំ ឬជាទម្លាប់។",
+                khmerOptions: ["ហាក់ដូចជាធ្លាប់ញ៉ាំ", "ហាក់ដូចជាញ៉ាំ/រៀងញ៉ាំដែរ", "មិនដែលញ៉ាំ", "ហាក់ដូចជាបានញ៉ាំ"]
+            },
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "가: 자야 씨는 성격이 어때요?\n나: 자야 씨는 말이 많지 않고 ( ).",
+                translate: "ក៖ តើចរិតរបស់ ចាយ៉ា យ៉ាងម៉េចដែរ?\nខ៖ ចាយ៉ា មិនសូវនិយាយច្រើនទេ គឺ (ហាក់ដូចជាមនុស្សស្ងប់ស្ងាត់)។",
+                options: ["급한 편이에요", "조용한 편이에요", "활발한 편이에요", "착한 적이 있어요"],
+                answer: 1,
+                explanation: "<b>조용하다</b> (ស្ងប់ស្ងាត់) + <b>-ㄴ 편이다</b> → <b>조용한 편이에요</b>។",
+                khmerOptions: ["រៀងចិត្តក្ដៅ", "រៀងស្ងប់ស្ងាត់", "រៀងរស់រវើក", "ធ្លាប់ចិត្តល្អ"]
+            },
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "갑자기 모르는 사람이 아는 척을 해서 아주 ( ).",
+                translate: "ស្រាប់តែមានអ្នកមិនស្គាល់មកធ្វើជាស្គាល់ ធ្វើឱ្យខ្ញុំ (ភ័យស្លន់ស្លោ/ធ្វើអ្វីមិនត្រូវ) ខ្លាំងណាស់។",
+                options: ["당황했어요", "즐거웠어요", "슬펐어요", "창피했어요"],
+                answer: 0,
+                explanation: "<b>당황하다</b> ប្រើនៅពេលមានរឿងកើតឡើងភ្លាមៗ ហើយយើងធ្វើអ្វីមិនត្រូវ (Flustered/Panicked)។",
+                khmerOptions: ["ភ័យស្លន់ស្លោ/ធ្វើអ្វីមិនត្រូវ", "សប្បាយចិត្ត", "ខូចចិត្ត", "ខ្មាសគេ"]
+            },
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "가: 한국 노래를 ( )?\n나: 네, 어제 노래방에서 불렀어요.",
+                translate: "ក៖ តើអ្នក (ធ្លាប់ច្រៀង) បទចម្រៀងកូរ៉េទេ?\nខ៖ បាទ ម្សិលមិញខ្ញុំបានច្រៀងនៅណូរ៉េបាំង។",
+                options: ["부른 적이 있어요", "부르는 편이에요", "부르고 싶어요", "부른 적이 없어요"],
+                answer: 0,
+                explanation: "<b>부르다</b> (ច្រៀង) + <b>-ㄴ 적이 있다</b> → <b>부른 적이 있어요</b>។",
+                khmerOptions: ["ធ្លាប់ច្រៀង", "រៀងចូលចិត្តច្រៀង", "ចង់ច្រៀង", "មិនដែលច្រៀង"]
+            },
+            {
+                category: "ពាក្យសព្ទ និងវេយ្យាករណ៍",
+                question: "친구의 전화를 제 전화로 ( ) 받아 버렸어요.",
+                translate: "ខ្ញុំបាន (ច្រឡំ/ស្មានតែ) ទូរស័ព្ទមិត្តភក្តិជាទូរស័ព្ទខ្ញុំ ក៏ទទួលបាត់ទៅ។",
+                options: ["오해해서", "이해해서", "착각해서", "실수해서"],
+                answer: 2,
+                explanation: "<b>착각하다</b> គឺការភាន់ច្រឡំវត្ថុមួយទៅវត្ថុមួយទៀត។",
+                khmerOptions: ["យល់ច្រឡំ", "យល់ពីបញ្ហា", "ភាន់ច្រឡំ/ស្មានថា", "ធ្វើខុស"]
+            },
+
+            // Reading (11-25)
+            {
+                category: "ការអានយល់ន័យ",
+                question: "저는 어제 큰 실수를 했습니다. 친구의 생일 파티에 초대받았는데 날짜를 착각했습니다. 그래서 오늘 친구 집에 갔습니다. 친구는 어제 파티를 다 끝냈다고 했습니다. 저는 너무 당황하고 친구에게 미안했습니다.\n\n질문: 이 사람은 어떤 실수를 했습니까?",
+                translate: "ម្សិលមិញខ្ញុំបានធ្វើខុសយ៉ាងធ្ងន់ធ្ងរ។ ខ្ញុំត្រូវបានគេអញ្ជើញទៅកម្មវិធីខួបកំណើតមិត្តភក្តិ ប៉ុន្តែខ្ញុំបានច្រឡំកាលបរិច្ឆេទ។ ដូច្នេះខ្ញុំទើបតែទៅផ្ទះមិត្តភក្តិនៅថ្ងៃនេះ។ មិត្តភក្តិប្រាប់ថា កម្មវិធីបានចប់តាំងពីម្សិលមិញបាត់ទៅហើយ។ ខ្ញុំពិតជាភ័យស្លន់ស្លោ និងសុំទោសមិត្តភក្តិខ្លាំងណាស់។\n\nសំណួរ៖ តើម្នាក់នេះបានធ្វើខុសអ្វី?",
+                options: ["친구 집을 몰랐습니다.", "선물을 안 샀습니다.", "날짜를 착각했습니다.", "파티가 싫었습니다."],
+                answer: 2,
+                explanation: "អត្ថបទបញ្ជាក់ថា <b>날짜를 착각했습니다</b> (ច្រឡំថ្ងៃខែ)។",
+                khmerOptions: ["មិនស្គាល់ផ្ទះមិត្តភក្តិ", "មិនបានទិញកាដូ", "ច្រឡំថ្ងៃខែ", "មិនចូលចិត្តកម្មវិធី"]
+            },
+            {
+                category: "ការអានយល់ន័យ",
+                question: "제 아내는 기억력이 좋은 편이지만 저는 건망증이 심한 편입니다. 가끔은 가스불을 끄는 것을 잊어버리거나 휴대폰을 어디에 두었는지 모를 때가 있습니다. 그래서 아내가 저에게 항상 조심하라고 이야기합니다.\n\n질문: 이 사람에 대한 설명으로 맞는 것은 무엇입니까?",
+                translate: "ប្រពន្ធរបស់ខ្ញុំមានការចងចាំល្អ ប៉ុន្តែខ្ញុំវិញមានជំងឺភ្លេចភ្លាំងខ្លាំងណាស់។ ជួនកាលខ្ញុំភ្លេចបិទហ្គាស ឬមិនដឹងថាដាក់ទូរស័ព្ទនៅឯណាទេ។ ដូច្នេះប្រពន្ធខ្ញុំតែងតែប្រាប់ឱ្យខ្ញុំប្រុងប្រយ័ត្នជានិច្ច។\n\nសំណួរ៖ តើការរៀបរាប់មួយណាត្រឹមត្រូវអំពីម្នាក់នេះ?",
+                options: ["기억력이 아주 좋습니다.", "건망증이 심한 편입니다.", "아내가 항상 실수를 합니다.", "휴대폰을 자주 잃어버립니다."],
+                answer: 1,
+                explanation: "អត្ថបទនិយាយថា <b>저는 건망증이 심한 편입니다</b> (ខ្ញុំរៀងភ្លេចច្រើន)។",
+                khmerOptions: ["ការចងចាំល្អណាស់", "រៀងភ្លេចច្រើន/ជំងឺភ្លេចភ្លាំងធ្ងន់", "ប្រពន្ធតែងតែធ្វើខុស", "បាត់ទូរស័ព្ទញឹកញាប់"]
+            }
+        ];
+
+        // Fill Reading questions 13-25
+        for(let i=13; i<=25; i++) {
+            quizData.push({
+                category: "ការអានយល់ន័យ",
+                question: `[មេរៀនទី ១២] "저는 한국에 처음 왔을 때 실수를 많이 했습니다. 신발을 벗지 않고 방에 들어간 적도 있고, 어른께 한 손으로 물건을 드린 적도 있습니다. 지금은 한국 문화를 잘 알아서 실수를 거의 하지 않는 편입니다."\n\nសំណួរ៖ តើម្នាក់នេះធ្លាប់ធ្វើខុសអ្វីខ្លះកាលពីមុន?`,
+                translate: "កាលមកកូរ៉េដំបូង ខ្ញុំបានធ្វើខុសច្រើនណាស់។ ខ្ញុំធ្លាប់ទាំងពាក់ស្បែកជើងចូលក្នុងបន្ទប់ និងធ្លាប់ហុចរបស់ឱ្យចាស់ទុំដោយដៃម្ខាង។ ឥឡូវនេះខ្ញុំយល់ពីវប្បធម៌កូរ៉េច្បាស់ហើយ ដូច្នេះខ្ញុំហាក់ដូចជាមិនសូវធ្វើខុសទៀតទេ។",
+                options: ["한국말을 못 했습니다.", "신발을 신고 방에 들어갔습니다.", "물건을 잃어버렸습니다.", "친구와 싸웠습니다."],
+                answer: 1,
+                explanation: "ធ្លាប់ពាក់ស្បែកជើងចូលបន្ទប់ (신발을 벗지 않고 방에 들어간 적도 있고)។",
+                khmerOptions: ["និយាយកូរ៉េមិនបាន", "ពាក់ស្បែកជើងចូលក្នុងបន្ទប់", "បាត់របស់របរ", "ឈ្លោះជាមួយមិត្តភក្តិ"]
+            });
+        }
+
+        // Culture Section (26-30) - 실수와 경험
+        const cultureQs = [
+            {
+                category: "វប្បធម៌",
+                question: "한국에서 어른께 물건을 드릴 때 어떻게 해야 합니까?",
+                translate: "នៅប្រទេសកូរ៉េ តើគួរធ្វើដូចម្តេចនៅពេលហុចរបស់ឱ្យចាស់ទុំ?",
+                options: ["한 손으로 드립니다.", "두 손으로 드립니다.", "던져서 드립니다.", "왼손으로만 드립니다."],
+                answer: 1,
+                explanation: "ត្រូវប្រើដៃពីរ (두 손) ដើម្បីបង្ហាញការគោរព។",
+                khmerOptions: ["ប្រើដៃម្ខាង", "ប្រើដៃពីរ", "បោះឱ្យ", "ប្រើតែដៃឆ្វេង"]
+            },
+            {
+                category: "វប្បធម៌",
+                question: "한국의 집이나 식당(방)에 들어갈 때 실수를 하지 않으려면 무엇을 해야 합ក្នុង?",
+                translate: "ដើម្បីកុំឱ្យមានកំហុសនៅពេលចូលក្នុងផ្ទះ ឬហាងអាហារ (បន្ទប់អង្គុយផ្ទាល់ដី) នៅកូរ៉េ តើអ្នកត្រូវធ្វើអ្វី?",
+                options: ["신발을 신고 들어갑니다.", "신발을 벗고 들어갑니다.", "노래를 부릅니다.", "큰 소리로 인사합니다."],
+                answer: 1,
+                explanation: "វប្បធម៌កូរ៉េគឺត្រូវដោះស្បែកជើង (신발을 벗다) មុនចូលក្នុងផ្ទះ។",
+                khmerOptions: ["ពាក់ស្បែកជើងចូល", "ដោះស្បែកជើងចេញ", "ច្រៀងចម្រៀង", "ជម្រាបសួរខ្លាំងៗ"]
+            },
+            {
+                category: "វប្បធម៌",
+                question: "식사할 때 밥그릇을 들고 먹는 것은 한국에서 어떤 행동입니까?",
+                translate: "តើការលើកចានបាយមកកាន់នៅពេលញ៉ាំ ជាសកម្មភាពបែបណាដៅប្រទេសកូរ៉េ?",
+                options: ["예의 바른 행동입니다.", "실례가 되는 행동입니다.", "당연한 행동입니다.", "칭찬받을 행동입니다."],
+                answer: 1,
+                explanation: "នៅកូរ៉េ ការលើកចានបាយញ៉ាំមិនមែនជាសុជីវធម៌ល្អទេ (실례가 되다) ខុសពីប្រទេសមួយចំនួនទៀត។",
+                khmerOptions: ["ជាសកម្មភាពមានសុជីវធម៌", "ជាសកម្មភាពឆ្គាំឆ្គង/មិនគួរសម", "ជាសកម្មភាពធម្មតា", "ជាសកម្មភាពគួរឱ្យសរសើរ"]
+            },
+            {
+                category: "វប្បធម៌",
+                question: "어른 앞에서 술을 마실 때 고개를 옆으로 돌리는 이유는 무엇입니까?",
+                translate: "ហេតុអ្វីបានជាត្រូវងាកក្បាលទៅចំហៀងនៅពេលផឹកស្រានៅចំពោះមុខចាស់ទុំ?",
+                options: ["옆 사람과 이야기하려고", "술이 맛없어서", "예의를 지키기 위해서", "부끄러워서"],
+                answer: 2,
+                explanation: "ការងាកក្បាលចេញគឺដើម្បីបង្ហាញការគោរព (예의)។",
+                khmerOptions: ["ដើម្បីនិយាយជាមួយអ្នកជិតខាង", "ព្រោះស្រាមិនឆ្ងាញ់", "ដើម្បីរក្សាសុជីវធម៌", "ព្រោះអៀន"]
+            },
+            {
+                category: "វប្បធម៌",
+                question: "한국에서 실수를 했을 때 가장 먼저 해야 할 말은 무엇입니까?",
+                translate: "តើពាក្យដំបូងដែលអ្នកគួរនិយាយនៅពេលធ្វើខុសនៅកូរ៉េគឺអ្វី?",
+                options: ["괜찮아요.", "축하해요.", "죄송합니다/미안합니다.", "반갑습니다."],
+                answer: 2,
+                explanation: "ត្រូវសុំទោស (죄송합니다) ភ្លាមៗ។",
+                khmerOptions: ["មិនអីទេ", "អបអរសាទរ", "សូមទោស", "រីករាយដែលបានស្គាល់"]
+            }
+        ];
+        
+        quizData.push(...cultureQs);
+
+        const quizManager = {
+            currentIdx: 0,
+            score: 0,
+            userAnswers: [],
+            isAnswered: false,
+
+            start() {
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                this.render();
+            },
+
+            render() {
+                this.isAnswered = false;
+                const q = quizData[this.currentIdx];
+                
+                const progress = ((this.currentIdx) / quizData.length) * 100;
+                document.getElementById('progress-fill').style.width = `${progress}%`;
+                
+                document.getElementById('question-category').innerText = q.category;
+                document.getElementById('question-number').innerText = `${this.currentIdx + 1}/${quizData.length}`;
+                document.getElementById('question-text').innerText = q.question;
+                
+                document.getElementById('question-translate').innerText = q.translate;
+                document.getElementById('question-translate').classList.add('hidden');
+                
+                const optionsContainer = document.getElementById('options-container');
+                optionsContainer.innerHTML = '';
+                
+                q.options.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-4 rounded-xl border-2 border-gray-100 hover:border-pink-500 hover:bg-pink-50 transition-all flex flex-col duration-200 shadow-sm";
+                    btn.innerHTML = `
+                        <span class="korean font-medium text-lg">${index + 1}. ${opt}</span>
+                        <span class="khmer-opt hidden text-xs text-pink-500 mt-1 italic">(${q.khmerOptions[index]})</span>
+                    `;
+                    btn.onclick = () => this.checkAnswer(index);
+                    optionsContainer.appendChild(btn);
+                });
+
+                document.getElementById('explanation-card').classList.add('hidden');
+            },
+
+            checkAnswer(choiceIdx) {
+                if(this.isAnswered) return;
+                this.isAnswered = true;
+                
+                const q = quizData[this.currentIdx];
+                const btns = document.getElementById('options-container').children;
+                this.userAnswers[this.currentIdx] = choiceIdx;
+
+                if(choiceIdx === q.answer) {
+                    btns[choiceIdx].classList.add('bg-green-100', 'border-green-500');
+                    this.score++;
+                } else {
+                    btns[choiceIdx].classList.add('bg-red-100', 'border-red-500');
+                    btns[q.answer].classList.add('bg-green-100', 'border-green-500');
+                }
+
+                document.getElementById('explanation-content').innerHTML = `
+                    <div class="p-3 bg-pink-50 rounded-lg mb-2 border border-pink-100">
+                        <strong class="text-pink-700 font-bold underline italic">គន្លឹះ៖</strong> ${q.explanation}
+                    </div>
+                    <div class="text-gray-600 italic border-t pt-2">
+                        <strong class="text-gray-800 font-bold underline">បកប្រែសំណួរ៖</strong> ${q.translate}
+                    </div>
+                `;
+                document.getElementById('explanation-card').classList.remove('hidden');
+                
+                document.getElementById('question-translate').classList.remove('hidden');
+                Array.from(document.querySelectorAll('.khmer-opt')).forEach(el => el.classList.remove('hidden'));
+            },
+
+            next() {
+                this.currentIdx++;
+                if(this.currentIdx < quizData.length) {
+                    this.render();
+                } else {
+                    this.showResult();
+                }
+            },
+
+            usePowerUp(type) {
+                if(type === 'translate') {
+                    document.getElementById('question-translate').classList.toggle('hidden');
+                } else if(type === 'fiftyFifty') {
+                    if(this.isAnswered) return;
+                    const q = quizData[this.currentIdx];
+                    const btns = document.getElementById('options-container').children;
+                    let removed = 0;
+                    for(let i=0; i<4; i++) {
+                        if(i !== q.answer && removed < 2) {
+                            btns[i].style.opacity = '0.2';
+                            btns[i].onclick = null;
+                            removed++;
+                        }
+                    }
+                } else if(type === 'transOptions') {
+                    Array.from(document.querySelectorAll('.khmer-opt')).forEach(el => el.classList.toggle('hidden'));
+                }
+            },
+
+            speakQuestion() {
+                const text = quizData[this.currentIdx].question;
+                this.speak(text, 'ko-KR');
+            },
+
+            speak(text, lang) {
+                const cleanText = text.replace(/\[.*?\]/g, '').replace(/\(.*\)/g, 'ចន្លោះ');
+                const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${lang.split('-')[0]}&client=tw-ob`;
+                const audio = new Audio(googleUrl);
+                audio.play().catch(() => {
+                    const msg = new SpeechSynthesisUtterance();
+                    msg.text = cleanText;
+                    msg.lang = lang;
+                    window.speechSynthesis.speak(msg);
+                });
+            },
+
+            showResult() {
+                document.getElementById('quiz-screen').classList.add('hidden');
+                document.getElementById('result-screen').classList.remove('hidden');
+                document.getElementById('score-display').innerText = `${this.score}/${quizData.length}`;
+                
+                const percent = (this.score / quizData.length) * 100;
+                let msg = percent >= 80 ? "អ្នកពិតជាពូកែណាស់! អ្នកយល់ពីបទពិសោធន៍នៅកូរ៉េបានយ៉ាងល្អ!" : 
+                          percent >= 50 ? "ល្អណាស់! សាកល្បងម្ដងទៀតដើម្បីឱ្យចាំមេរៀនកាន់តែច្បាស់។" : "ព្យាយាមរំលឹកមេរៀនឡើងវិញបន្តិចណា។";
+                
+                document.getElementById('result-message').innerText = msg;
+                document.getElementById('progress-fill').style.width = `100%`;
+            },
+
+            reviewMode() {
+                this.currentIdx = 0;
+                this.render();
+                document.getElementById('result-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+            }
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if(e.key >= 1 && e.key <= 4) quizManager.checkAnswer(parseInt(e.key) - 1);
+            if(e.key === 'Enter' && quizManager.isAnswered) quizManager.next();
+        });
+    </script>
+</body>
+</html>
